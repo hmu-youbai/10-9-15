@@ -1,0 +1,104 @@
+BiocManager::install("biomaRt")
+library(biomaRt)
+mart = useMart('ensembl')
+listDatasets(mart)
+
+bmart <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL", 
+                          dataset = "hsapiens_gene_ensembl",
+                          host = "www.ensembl.org")
+# 从输入数据里提取基因名
+# feature_ids <- rownames(expMatrix)##就是你需要ENSEMBL的例如ENSG00000000003
+attributes = c(
+  "ensembl_gene_id",
+  "hgnc_symbol",
+  "chromosome_name",
+  "start_position",
+  "end_position"
+)
+
+hsp_info <- getBM(attributes = attributes, mart = bmart)
+
+
+
+
+rawcount <- read.csv("108.txt",skip = 1,sep="\t",row.names = 1)
+
+
+library(dplyr)
+kb <- rawcount$Length / 1000
+countdata <- rawcount[,6:624]
+rpk <- countdata / kb
+tpm <- t(t(rpk)/colSums(rpk) * 1000000)
+
+
+zz=read.table("108.txt")
+
+ss=t(zz[1,])
+
+ss=ss[7:625]
+colnames(tpm)=ss
+
+
+
+write.csv(tpm,"tpm22.csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+install.packages("tidyverse")
+
+setwd("C:/Users/0.0/Desktop/2333/out")
+
+library(psych)
+library(qgraph)
+library(igraph)
+library(tidyverse)
+mynet=read.delim("count_network.txt",check.names = F)
+net=graph_from_data_frame(mynet)
+plot(net)
+
+
+mypvals=read.delim("pvalues.txt")
+mymeans=read.delim("means.txt")
+
+
+
+
+
+mypvals <- read.delim(paste0(pbmc,"pvalues.txt"), check.names = FALSE)
+mymeans <- read.delim(paste0(pbmc,"means.txt"), check.names = FALSE)
+
+
+
+# 这些基因list很有意思啊，建议保存
+chemokines <- grep("^CXC|CCL|CCR|CX3|XCL|XCR", mymeans$interacting_pair,value = T)
+chemokines <- grep("^CXC|CCL|CCR|CX3|XCL|XCR", mymeans$interacting_pair,value = T)
+th1 <- grep("IL2|IL12|IL18|IL27|IFNG|IL10|TNF$|TNF |LTA|LTB|STAT1|CCR5|CXCR3|IL12RB1|IFNGR1|TBX21|STAT4", 
+            mymeans$interacting_pair,value = T)
+th2 <- grep("IL4|IL5|IL25|IL10|IL13|AREG|STAT6|GATA3|IL4R", 
+            mymeans$interacting_pair,value = T)
+th17 <- grep("IL21|IL22|IL24|IL26|IL17A|IL17A|IL17F|IL17RA|IL10|RORC|RORA|STAT3|CCR4|CCR6|IL23RA|TGFB", 
+             mymeans$interacting_pair,value = T)
+treg <- grep("IL35|IL10|FOXP3|IL2RA|TGFB", mymeans$interacting_pair,value = T)
+costimulatory <- grep("CD86|CD80|CD48|LILRB2|LILRB4|TNF|CD2|ICAM|SLAM|LT[AB]|NECTIN2|CD40|CD70|CD27|CD28|CD58|TSLP|PVR|CD44|CD55|CD[1-9]", 
+                      mymeans$interacting_pair,value = T)
+coinhibitory <- grep("SIRP|CD47|ICOS|TIGIT|CTLA4|PDCD1|CD274|LAG3|HAVCR|VSIR", 
+                     mymeans$interacting_pair,value = T)
+niche <- grep("CSF", mymeans$interacting_pair,value = T)
+
+
+
+a=which(mypvals$EndoCell.EmbryoCell ==0)
+b=which(mypvals$EmbryoCell.EndoCell_2 !=1)
+
+intersect(a,b)
