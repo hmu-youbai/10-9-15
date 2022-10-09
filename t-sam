@@ -1,0 +1,207 @@
+setwd("C:/Users/0.0/Desktop/996/linshi")
+xulieming=read.table("xulieming")
+zhengfu=read.table("zhengfu")
+r2xulie=read.table("r2xulie")
+pos=read.table("pos")
+zheng=xulieming$V1[which(zhengfu==0)]
+fu=xulieming$V1[which(zhengfu==16)]
+jieguo=read.table("fff")
+zhengpp=pos$V1[which(zhengfu==0)]
+fupp=pos$V1[which(zhengfu==16)]
+zhengxx=r2xulie$V1[which(zhengfu==0)]
+fuxx=r2xulie$V1[which(zhengfu==16)]
+aa3 = jieguo$V1[seq(3,length(jieguo$V1),3)]
+aa2=  jieguo$V1[seq(2,length(jieguo$V1),3)]
+
+#########write.table(final,"fff",row.names = FALSE,col.names = FALSE,quote=FALSE)
+
+sepppfu=c()
+for(i in 1:length(fu)){
+  ls=fupp[i]+nchar(fuxx[i])-1000+as.numeric(aa3[i])-nchar(aa2[i])+str_count(aa2[i],"-")-2
+  sepppfu=append(sepppfu,ls)
+}
+
+write.table(sepppfu,"ppppp")
+write.table(fu,"pppppmm")
+
+
+###保留序列名-pos
+###提取bismark/sam中的序列名、正负、染色体、pos、是否50/////r1要先去重
+###在python中利用序列名构建字典/这里，理论上bismark的sam应该是我的sw子集
+###所以我的构建我sw'字典，用bismark的序列名去查找。保留交集序列名/两个pos/正负/染色体/是否
+###小问题：政府问题，我的sw比对结果是分正负的，所以python也要按正负拆开再取交集
+
+
+
+
+setwd("C:/Users/0.0/Desktop/")
+r1=read.table("R2_1p.fq",header=F,na.strings = c("NA"),fill=TRUE,comment.char ="",quote="")
+r2=read.table("R2_2p.fq",header=F,na.strings = c("NA"),fill=TRUE,comment.char ="",quote="")
+
+r1xx=r1$V1[seq(2,length(r1$V1),4)]
+r2xx=r2$V1[seq(2,length(r2$V1),4)]
+r2nn=r2$V1[seq(1,length(r2$V1),4)]
+r1r2=paste(r2xx,r1xx,sep="￥")
+
+
+ccc=cbind(r2nn,r1r2)
+df <- ccc[!duplicated(ccc[,2]),]
+mm=df[,2]
+mm2=strsplit(mm,'￥')
+final <- do.call('c',mm2)
+qqq=final[seq(1,length(final),2)]
+df[,2]=qqq
+
+
+zzz=c(t(df))
+write.table(zzz,"zzz",row.names = FALSE,
+            col.names = FALSE,quote=FALSE)
+write.table(df,"dfff",row.names = FALSE,
+            col.names = FALSE,quote=FALSE)
+
+
+
+
+
+
+#####################生成sam，我先取第一个结果
+aa1=biduijieguo3[4]
+aa2=biduijieguo3[5]
+aa3=biduijieguo3[6]
+beiyong=substring(kbkb[2],as.numeric(aa3)-(nchar(aa2)-str_count(aa2,"-")),nchar(kbkb[2]))
+#########################准备工作完毕
+sep5_1=function(x1,x2){
+  cece=c()
+  for (i in 1:nchar(x1)) {
+    if(substr(x1,i,i)!='-'&&substr(x2,i,i)!='-'){
+      zhongjian='M'
+    }else if(substr(x1,i,i)=='-'){
+      zhongjian='D'
+    }else if(substr(x2,i,i)=='-'){
+      zhongjian='I'
+    }else{
+      zhongjian='f'
+    }
+    cece=paste(cece,zhongjian,sep = '')
+  }
+  return(cece)
+  
+}
+sep5_2=function(oo){
+  k=1
+  jiji=c()
+  pp=paste(oo,'h',sep = '')
+  for(i in 1:(nchar(oo))){
+    if(substring(pp,i,i)==substring(pp,i+1,i+1)){
+      k=k+1
+    }else{
+      jiji=paste(jiji,(paste(k,substring(oo,i,i),sep = '')),sep = '')
+      k=1
+    }
+  }
+  return(jiji)
+}
+sep5=function(x1,x2){
+  oo=sep5_1(x1,x2)
+  jiji2=sep5_2(oo)
+  return(jiji2)
+}
+oo=sep5_1(aa1,aa2)
+CIGAR=sep5(aa1,aa2)
+#############################得到5
+sep13=function(x1,x2){
+  k=0
+  gigi=''
+  for(i in 1:(nchar(x1)+1)){
+    if(i!=(nchar(x1)+1)){
+      if((substring(x1,i,i)!='-'&&substring(x1,i,i)!='-')&&(substring(x2,i,i)!='-'&&substring(x2,i,i)!='-')){
+        if(substring(x1,i,i)==substring(x2,i,i)){
+          k=k+1
+        }else{
+          gigi=paste(gigi,(paste(k,substring(x2,i,i),sep = '')),sep = '')
+          k=0
+          
+        }
+      }
+    }else{
+      gigi=paste(gigi,k,sep='')
+    }
+    
+  }
+  return(gigi)
+}
+MD=sep13(aa1,aa2)
+changdu=str_count(oo,"M")+str_count(oo,"D")
+###########################得到13 得到
+sep14=function(x1,x2){
+  library(stringr)
+  hihi=''
+  for (i in 1:nchar(x1)){
+    jishu4=str_count(substring(x2,1,i),"-")
+    if(substring(x2,i,i)=='-'){
+      hihi=hihi
+    }
+    if(substring(x2,i,i)=='C'&&substring(x1,i,i)=='C'){
+      if(substring(beiyong,i-jishu4+1,i-jishu4+1)=='G'){
+        hihi=paste(hihi,'Z',sep = '')
+      }
+      if(substring(beiyong,i-jishu4+1,i-jishu4+1)!='G'&&substring(beiyong,i-jishu4+2,i-jishu4+2)=='G'){
+        hihi=paste(hihi,'X',sep = '')
+      }
+      if(substring(beiyong,i-jishu4+1,i-jishu4+1)!='G'&&substring(beiyong,i-jishu4+2,i-jishu4+2)!='G'){
+        hihi=paste(hihi,'H',sep = '')
+      }
+      
+    }
+    if(substring(x2,i,i)=='C'&&substring(x1,i,i)=='T'){
+      if(substring(beiyong,i-jishu4+1,i-jishu4+1)=='G'){
+        hihi=paste(hihi,'z',sep = '')
+      }
+      if(substring(beiyong,i-jishu4+1,i-jishu4+1)!='G'&&substring(beiyong,i-jishu4+2,i-jishu4+2)=='G'){
+        hihi=paste(hihi,'x',sep = '')
+      }
+      if(substring(beiyong,i-jishu4+1,i-jishu4+1)!='G'&&substring(beiyong,i-jishu4+2,i-jishu4+2)!='G'){
+        hihi=paste(hihi,'h',sep = '')
+      }
+      
+    }
+    if(substring(x2,i,i)!='C'&&substring(x2,i,i)!='-'){
+      hihi=paste(hihi,'.',sep = '')
+    }
+    if(substring(x2,i,i)=='C'&&substring(x1,i,i)=='A'){
+      hihi=paste(hihi,'.',sep = '')
+    }
+    if(substring(x2,i,i)=='C'&&substring(x1,i,i)=='G'){
+      hihi=paste(hihi,'.',sep = '')
+    }
+    if(substring(x2,i,i)=='C'&&substring(x1,i,i)=='-'){
+      hihi=paste(hihi,'.',sep = '')
+    }
+  }
+  return(hihi) 
+}
+xm=sep14(aa1,aa2)
+#############################得到14
+#####################
+sepp1=xulieming[2]
+sepp2=0##########存疑？相同还是相反
+sepp3=chr[2]
+sepp4=pos[2]+as.numeric(aa3)-nchar(aa2)+str_count(aa2,"-")-1
+sepp6=CIGAR
+sepp5=42 ##############???
+sepp7='*'
+sepp8=0
+sepp9=0
+sepp10=r1xulie[which(r1name==xulieming[2])]
+sepp11=zhiliang[which(r1name==xulieming[2])]
+sepp13=MD
+sepp12=str_count(MD,"A")+str_count(MD,"G")+str_count(MD,"C")+str_count(MD,"T")
+sepp14=xm
+sepp15='XR:Z:CT'
+sepp16='XG:Z:CT'
+zzjieguo=paste(sepp1,'  ',sepp2,'  ',sepp3,'  ',sepp4,'  ',sepp5,'  ',sepp6,'  ',sepp7,'  ',sepp8,'  ',sepp9,'  ',sepp10,'  ',sepp11,'  ','NM:i:',sepp12,'  ','MD:Z:',sepp13,'  ','XM:Z:',sepp14,'  ',sepp15,'  ',sepp16,sep='')
+
+'  '
+'  '
+'  '
+
